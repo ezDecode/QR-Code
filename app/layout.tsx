@@ -5,6 +5,8 @@ import "./globals.css"
 import Script from "next/script"
 import { Toaster } from "@/components/ui/toaster"
 import { Analytics } from "@vercel/analytics/next"
+import { I18nProvider } from "@/hooks/use-i18n"
+import { ErrorBoundary } from "@/components/error-boundary"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -69,8 +71,12 @@ export default function RootLayout({
         <meta name="google-adsense-account" content="ca-pub-3460143338187515" />
       </head>
       <body className={inter.className}>
-        {children}
-        <Toaster />
+        <ErrorBoundary>
+          <I18nProvider>
+            {children}
+            <Toaster />
+          </I18nProvider>
+        </ErrorBoundary>
         <Analytics />
         <Script id="schema-org" type="application/ld+json">
           {`

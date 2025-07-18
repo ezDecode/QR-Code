@@ -137,6 +137,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+// Enhanced toast function with error type handling
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -166,6 +167,87 @@ function toast({ ...props }: Toast) {
   }
 }
 
+// Enhanced toast helpers for different error types
+const toastHelpers = {
+  success: (title: string, description?: string) => {
+    return toast({
+      title,
+      description,
+      variant: "default",
+    })
+  },
+  
+  error: (title: string, description?: string, error?: Error) => {
+    // Log error for debugging
+    if (error) {
+      console.error('Toast Error:', error)
+    }
+    
+    return toast({
+      title,
+      description,
+      variant: "destructive",
+    })
+  },
+  
+  warning: (title: string, description?: string) => {
+    return toast({
+      title,
+      description,
+      variant: "default", // You might want to add a warning variant
+    })
+  },
+  
+  info: (title: string, description?: string) => {
+    return toast({
+      title,
+      description,
+      variant: "default",
+    })
+  },
+  
+  // Specific error type handlers
+  networkError: (operation: string = "operation") => {
+    return toast({
+      title: "Network Error",
+      description: `Failed to complete ${operation}. Please check your connection and try again.`,
+      variant: "destructive",
+    })
+  },
+  
+  storageError: (operation: string = "operation") => {
+    return toast({
+      title: "Storage Error",
+      description: `Failed to ${operation}. Your browser storage might be full or unavailable.`,
+      variant: "destructive",
+    })
+  },
+  
+  parseError: (content: string = "content") => {
+    return toast({
+      title: "Parse Error",
+      description: `Failed to parse ${content}. Please check the format and try again.`,
+      variant: "destructive",
+    })
+  },
+  
+  validationError: (field: string = "input") => {
+    return toast({
+      title: "Validation Error",
+      description: `Invalid ${field} provided. Please check your input and try again.`,
+      variant: "destructive",
+    })
+  },
+  
+  securityWarning: (message: string) => {
+    return toast({
+      title: "Security Warning",
+      description: message,
+      variant: "destructive",
+    })
+  }
+}
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -182,8 +264,9 @@ function useToast() {
   return {
     ...state,
     toast,
+    ...toastHelpers,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
 
-export { useToast, toast }
+export { useToast, toast, toastHelpers }

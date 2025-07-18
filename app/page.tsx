@@ -4,9 +4,12 @@ import { useState } from "react"
 import { Zap, Github } from "lucide-react"
 import QrGenerator from "@/components/qr-generator"
 import { HistoryModal } from "@/components/history-modal"
+import { LanguageSelector } from "@/components/language-selector"
 import { useQrHistory } from "@/hooks/use-history"
+import { useI18n } from "@/hooks/use-i18n"
 
 export default function Home() {
+  const { t } = useI18n()
   const {
     history,
     addToHistory,
@@ -32,7 +35,7 @@ export default function Home() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <Zap className="h-8 w-8 text-accent" />
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight">QR CODE GENERATOR</h1>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight">{t('nav.title').toUpperCase()}</h1>
           </div>
           <div className="flex items-center gap-2">
             <HistoryModal
@@ -47,6 +50,7 @@ export default function Home() {
               open={historyModalOpen}
               onOpenChange={setHistoryModalOpen}
             />
+            <LanguageSelector />
             <a
               href="https://github.com"
               target="_blank"
@@ -61,17 +65,17 @@ export default function Home() {
 
         {/* QR Generator */}
         <QrGenerator
-          onGenerated={(text, dataUrl) => {
-            // Add generated QR to history
-            addToHistory(text, dataUrl, 'text')
+          onGenerated={(text, dataUrl, parsedContent) => {
+            // Add generated QR to history - parsing is now handled automatically
+            addToHistory(text, dataUrl)
           }}
         />
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <p className="text-sm font-bold">FREE ONLINE QR CODE GENERATOR</p>
+          <p className="text-sm font-bold">{t('nav.title').toUpperCase()}</p>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Generate QR codes instantly. All processing happens in your browser - no data is sent to servers.
+            {t('nav.subtitle')}
           </p>
         </div>
       </div>

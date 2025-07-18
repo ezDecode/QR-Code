@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { History } from "lucide-react"
 import EnhancedHistoryPanel from "@/components/enhanced-history-panel"
 import type { QrHistoryItem } from "@/hooks/use-history"
+import { useI18n } from "@/hooks/use-i18n"
 
 interface HistoryModalProps {
   history: QrHistoryItem[]
@@ -31,6 +32,8 @@ export function HistoryModal({
   open,
   onOpenChange
 }: HistoryModalProps) {
+  const { t } = useI18n()
+  
   const handleItemSelect = (item: QrHistoryItem) => {
     onSelect(item)
     onOpenChange(false) // Close modal after selecting an item
@@ -45,12 +48,12 @@ export function HistoryModal({
           onClick={() => onOpenChange(true)}
         >
           <History className="h-4 w-4" />
-          <span className="font-medium">History</span>
+          <span className="font-medium">{t('history.title')}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="neo-brutalist-card border-[3px] border-black shadow-lg p-6 max-w-4xl w-[95%]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-black uppercase">History</DialogTitle>
+          <DialogTitle className="text-xl font-black uppercase">{t('history.title')}</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
           <EnhancedHistoryPanel
