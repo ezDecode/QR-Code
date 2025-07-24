@@ -108,7 +108,9 @@ export function checkUrlSafety(url: string): SecurityAnalysis {
   try {
     // Input validation
     if (typeof url !== 'string') {
-      console.warn('checkUrlSafety: Invalid URL input:', typeof url)
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('checkUrlSafety: Invalid URL input:', typeof url)
+      }
       return {
         isSafe: false,
         riskLevel: 'high',
@@ -167,7 +169,10 @@ export function checkUrlSafety(url: string): SecurityAnalysis {
     try {
       urlObj = new URL(trimmedUrl)
     } catch (urlError) {
-      console.warn('checkUrlSafety: URL parsing failed:', urlError)
+      // Don't log error details in production to prevent information disclosure
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('checkUrlSafety: URL parsing failed:', urlError)
+      }
       const errorResult = {
         isSafe: false,
         riskLevel: 'high' as const,
@@ -343,15 +348,18 @@ export function checkUrlSafety(url: string): SecurityAnalysis {
     })
 
     return result
-  } catch (error) {
-    console.error('checkUrlSafety: Critical security analysis error:', error)
-    // Return safe fallback with high risk
-    const errorResult = {
-      isSafe: false,
-      riskLevel: 'high' as const,
-      warnings: ['Security analysis failed - treat with caution'],
-      recommendations: ['Unable to verify URL safety - proceed with extreme caution']
-    }
+    } catch (error) {
+      // Don't log sensitive error details in production
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('checkUrlSafety: Critical security analysis error:', error)
+      }
+      // Return safe fallback with high risk
+      const errorResult = {
+        isSafe: false,
+        riskLevel: 'high' as const,
+        warnings: ['Security analysis failed - treat with caution'],
+        recommendations: ['Unable to verify URL safety - proceed with extreme caution']
+      }
     
     // Cache the error result
     securityAnalysisCache.set(cacheKey, {

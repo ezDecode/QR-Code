@@ -63,7 +63,7 @@ describe('QR Content Parser', () => {
       
       // Test open link action
       result.actions[0].action()
-      expect(window.open).toHaveBeenCalledWith('https://example.com', '_blank')
+      expect(window.open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer')
       
       // Test copy URL action
       result.actions[1].action()
@@ -114,7 +114,7 @@ describe('QR Content Parser', () => {
       
       // Test send email action
       result.actions[0].action()
-      expect(window.open).toHaveBeenCalledWith('mailto:test@example.com?subject=Hello')
+      expect(window.open).toHaveBeenCalledWith('mailto:test@example.com?subject=Hello', '_blank', 'noopener,noreferrer')
       
       // Test copy email action
       result.actions[1].action()
@@ -161,7 +161,7 @@ describe('QR Content Parser', () => {
       
       // Test call action
       result.actions[0].action()
-      expect(window.open).toHaveBeenCalledWith('tel:+1234567890')
+      expect(window.open).toHaveBeenCalledWith('tel:+1234567890', '_blank', 'noopener,noreferrer')
       
       // Test copy number action
       result.actions[1].action()
@@ -205,7 +205,7 @@ describe('QR Content Parser', () => {
       
       // Test send SMS action
       result.actions[0].action()
-      expect(window.open).toHaveBeenCalledWith('sms:+1234567890?body=Hello')
+      expect(window.open).toHaveBeenCalledWith('sms:+1234567890?body=Hello', '_blank', 'noopener,noreferrer')
       
       // Test copy number action
       result.actions[1].action()
@@ -347,15 +347,15 @@ END:VCARD`
       
       // Test call action
       result.actions[0].action()
-      expect(window.open).toHaveBeenCalledWith('tel:+1234567890')
+      expect(window.open).toHaveBeenCalledWith('tel:+1234567890', '_blank', 'noopener,noreferrer')
       
       // Test email action
       result.actions[1].action()
-      expect(window.open).toHaveBeenCalledWith('mailto:john@example.com')
+      expect(window.open).toHaveBeenCalledWith('mailto:john@example.com', '_blank', 'noopener,noreferrer')
       
       // Test website action
       result.actions[2].action()
-      expect(window.open).toHaveBeenCalledWith('https://johndoe.com', '_blank')
+      expect(window.open).toHaveBeenCalledWith('https://johndoe.com', '_blank', 'noopener,noreferrer')
     })
   })
 

@@ -1,4 +1,5 @@
 import { LucideIcon, Link, Mail, Phone, MessageSquare, Wifi, User, Copy, ExternalLink, PhoneCall } from 'lucide-react';
+import { safeOpenUrl } from './security-sanitization';
 
 // Performance optimization: Content parsing cache
 const contentParsingCache = new Map<string, ParsedQrContent>()
@@ -309,7 +310,7 @@ function generateUrlActions(data: UrlData): QrAction[] {
   return [
     {
       label: 'Open Link',
-      action: () => window.open(data.url, '_blank'),
+      action: () => safeOpenUrl(data.url),
       icon: ExternalLink
     },
     {
@@ -342,7 +343,7 @@ function generateEmailActions(data: EmailData): QrAction[] {
 
   actions.unshift({
     label: 'Send Email',
-    action: () => window.open(mailtoUrl),
+    action: () => safeOpenUrl(mailtoUrl),
     icon: Mail
   });
 
@@ -356,7 +357,7 @@ function generatePhoneActions(data: PhoneData): QrAction[] {
   return [
     {
       label: 'Call',
-      action: () => window.open(`tel:${data.phone}`),
+      action: () => safeOpenUrl(`tel:${data.phone}`),
       icon: PhoneCall
     },
     {
@@ -378,7 +379,7 @@ function generateSmsActions(data: SmsData): QrAction[] {
   return [
     {
       label: 'Send SMS',
-      action: () => window.open(smsUrl),
+      action: () => safeOpenUrl(smsUrl),
       icon: MessageSquare
     },
     {
@@ -417,7 +418,7 @@ function generateVCardActions(data: VCardData): QrAction[] {
   if (data.phone) {
     actions.push({
       label: 'Call',
-      action: () => window.open(`tel:${data.phone}`),
+      action: () => safeOpenUrl(`tel:${data.phone}`),
       icon: PhoneCall
     });
   }
@@ -425,7 +426,7 @@ function generateVCardActions(data: VCardData): QrAction[] {
   if (data.email) {
     actions.push({
       label: 'Send Email',
-      action: () => window.open(`mailto:${data.email}`),
+      action: () => safeOpenUrl(`mailto:${data.email}`),
       icon: Mail
     });
   }
@@ -433,7 +434,7 @@ function generateVCardActions(data: VCardData): QrAction[] {
   if (data.url) {
     actions.push({
       label: 'Visit Website',
-      action: () => window.open(data.url, '_blank'),
+      action: () => safeOpenUrl(data.url),
       icon: ExternalLink
     });
   }

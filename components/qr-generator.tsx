@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useI18n } from "@/hooks/use-i18n"
 import { parseQrContent, type ParsedQrContent } from "@/lib/qr-content-parser"
 import { checkUrlSafety, type SecurityAnalysis } from "@/lib/security-utils"
+import { sanitizeQrContent, auditQrContent, safeOpenUrl, type SecurityAudit } from "@/lib/security-sanitization"
 import { appPerformanceMonitor, timeAsyncOperation } from "@/lib/performance-monitor"
 
 interface QrGeneratorProps {
@@ -62,6 +63,7 @@ export default function QrGenerator({ onGenerated }: QrGeneratorProps) {
   const [generatedText, setGeneratedText] = useState<string>("")
   const [parsedContent, setParsedContent] = useState<ParsedQrContent | null>(null)
   const [securityAnalysis, setSecurityAnalysis] = useState<SecurityAnalysis | null>(null)
+  const [securityAudit, setSecurityAudit] = useState<SecurityAudit | null>(null)
   
   // Form states
   const [textInput, setTextInput] = useState("")
@@ -116,6 +118,25 @@ export default function QrGenerator({ onGenerated }: QrGeneratorProps) {
       setIsGenerating(true)
       let parsed: ParsedQrContent | null = null
       let security: SecurityAnalysis | null = null
+      let audit: SecurityAudit | null = null
+
+      // First, perform security audit on the raw content
+      try {
+        audit = auditQrContent(trimmedText, 'unknown')
+        setSecurityAudit(audit)
+        
+        if (!audit.isSafe) {
+          if (audit.riskLevel === 'high') {
+            securityWarning(`High security risk detected: ${audit.issues[0] || 'Multiple security concerns'}`)
+            return
+          } else if (audit.riskLevel === 'medium') {
+            warning('Security Notice', audit.issues[0] || 'Potential security concerns detected')
+          }
+        }
+      } catch (auditError) {
+        console.warn('Security audit failed:', auditError)
+        securityWarning('Unable to perform security audit - proceed with caution')
+      }
 
       // Parse the content to determine type and actions with error handling
       try {

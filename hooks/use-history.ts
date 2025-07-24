@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { parseQrContent, QrAction, ParsedQrContent } from "@/lib/qr-content-parser"
 import { checkUrlSafety, SecurityAnalysis } from "@/lib/security-utils"
-import { getFromStorage, setToStorage, StorageResult } from "@/lib/storage-utils"
+import { secureStorage, LegacyStorageUtils } from "@/lib/secure-storage"
 import { limitArraySize, performanceMonitor } from "@/lib/performance-utils"
 
 export interface QrHistoryItem {
@@ -57,19 +57,24 @@ export function useQrHistory() {
     }
   }, [])
 
-  // Load history from localStorage on initial render with error handling
+  // Load history from secure storage on initial render with migration
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const result = getFromStorage<QrHistoryItem[]>("qr-code-history", [])
+        // Check if migration is needed
+        const keysToMigrate = LegacyStorageUtils.needsMigration(["qr-code-history"])
+        if (keysToMigrate.length > 0) {
+          console.log("Migrating history to secure storage...")
+          await LegacyStorageUtils.migrateToSecureStorage(keysToMigrate)
+        }
+
+        const data = await secureStorage.getItem("qr-code-history")
         
-        if (result.success && result.data) {
-          setHistory(result.data)
+        if (data && Array.isArray(data)) {
+          setHistory(data)
           setStorageError(null)
-        } else if (result.error) {
-          console.warn("Failed to load history from storage:", result.error)
-          setStorageError(result.error)
-          // Continue with empty history
+        } else {
+          // Initialize with empty history
           setHistory([])
         }
       } catch (error) {
@@ -84,7 +89,7 @@ export function useQrHistory() {
     loadHistory()
   }, [])
 
-  // Save history to localStorage whenever it changes with error handling and memory management
+  // Save history to secure storage whenever it changes
   useEffect(() => {
     if (isLoaded && history.length >= 0) {
       const saveHistory = async () => {
@@ -103,21 +108,21 @@ export function useQrHistory() {
           // Limit storage size to prevent quota issues
           const storageHistory = limitArraySize(historyToSave, STORAGE_HISTORY_SIZE)
           
-          const result = setToStorage("qr-code-history", storageHistory)
+          const success = await secureStorage.setItem("qr-code-history", storageHistory)
           
-          if (!result.success && result.error) {
-            console.warn("Failed to save history to storage:", result.error)
-            setStorageError(result.error)
+          if (!success) {
+            console.warn("Failed to save history to secure storage")
+            setStorageError("Failed to save history")
             
-            // If quota exceeded, try to save an even smaller subset
-            if (result.error.includes('quota') && storageHistory.length > 10) {
+            // Try to save a smaller subset
+            if (storageHistory.length > 10) {
               const trimmedHistory = limitArraySize(storageHistory, 10)
-              const retryResult = setToStorage("qr-code-history", trimmedHistory)
+              const retrySuccess = await secureStorage.setItem("qr-code-history", trimmedHistory)
               
-              if (retryResult.success) {
-                console.info("Saved trimmed history due to storage quota")
+              if (retrySuccess) {
+                console.info("Saved trimmed history due to storage limitations")
                 setHistory(trimmedHistory)
-                setStorageError("Storage quota exceeded - history trimmed to recent items")
+                setStorageError("Storage limit exceeded - history trimmed to recent items")
               }
             }
           } else {
